@@ -1,0 +1,21 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'jp.mushamusha.threelevelflashlight'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'jp.mushamusha.threelevelflashlight'
+        minSdk 23
+        targetSdk 36
+        versionCode 4
+        versionName '3.1'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
