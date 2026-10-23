@@ -1,0 +1,40 @@
+name: Deploy SimpleLight source
+
+on:
+  push:
+    branches:
+      - push-simplelight-temp
+    paths:
+      - '.tmp-simplelight/source.zip'
+      - '.tmp-simplelight/trigger.txt'
+      - '.github/workflows/deploy-simplelight.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract source
+        run: |
+          echo '9230a2ca8e5f184bef23e296b1e3dac253cd11e4391b20704f64ddda9f5141ed  .tmp-simplelight/source.zip' | sha256sum -c -
+          unzip -q .tmp-simplelight/source.zip -d /tmp/simplelight-src
+          test -f /tmp/simplelight-src/SimpleLight/app/src/main/AndroidManifest.xml
+
+      - name: Commit source to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch main
+          git pull --ff-only origin main
+          cp -a /tmp/simplelight-src/SimpleLight/. .
+          chmod +x gradlew
+          git add -A
+          git commit -m 'Push audited SimpleLight app' || true
+          git push origin main
