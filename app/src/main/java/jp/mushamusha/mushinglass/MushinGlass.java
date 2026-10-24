@@ -103,7 +103,7 @@ public final class MushinGlass implements Application.ActivityLifecycleCallbacks
         text("brown_dark","濃い茶色","#6F4A2A"); text("brown_light","薄い茶色","#B08A63"); text("blue_dark","濃い青","#2F4F8E");
         text("blue_light","薄い青","#7B90C4"); text("sky_dark","濃い空色","#2F6E8E"); text("sky_light","薄い空色","#7FAFC4");
 
-        icon("default","標準（赤）","#E62117","IconDefault"); icon("green","グリーン","#4E8F6B","IconGreen");
+        icon("default","標準（モスグリーン）","#436E6A","IconDefault"); icon("green","グリーン","#4E8F6B","IconGreen");
         icon("green_light","薄い緑","#7FA98C","IconGreenLight"); icon("white","ホワイト","#FFFFFF","IconWhite");
         icon("moss_pink","モスピンク","#8E5A6B","IconMossPink"); icon("moss_red","モスレッド","#8E4F4A","IconMossRed");
         icon("moss_black","モスブラック","#3A3A3A","IconMossBlack"); icon("mono_light","ブラック","#000000","IconMonoLight");
