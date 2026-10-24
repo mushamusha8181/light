@@ -1,0 +1,26 @@
+name: Fix MUSHIN clean build
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-mushin-clean-build.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch generated manifest lifecycle
+        run: |
+          python3 -c "from pathlib import Path; p=Path('mushin-glass.gradle'); s=p.read_text(encoding='utf-8'); old=\"def prepareMushinGlass = tasks.register('prepareMushinGlass') {\\n    doLast {\\n        def src = new File(mgGenerated, 'src/jp/mushamusha/mushinglass/MushinGlass.java')\"; new=\"def prepareMushinGlass = tasks.register('prepareMushinGlass') {\\n    doLast {\\n        mgGeneratedManifest.parentFile.mkdirs()\\n        mgGeneratedManifest.setText(mgManifestText, 'UTF-8')\\n        def src = new File(mgGenerated, 'src/jp/mushamusha/mushinglass/MushinGlass.java')\"; assert old in s; p.write_text(s.replace(old,new,1),encoding='utf-8'); Path('design-system/mushin-glass.gradle').write_text(p.read_text(encoding='utf-8'),encoding='utf-8')"
+          rm .github/workflows/fix-mushin-clean-build.yml
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mushin-glass.gradle design-system/mushin-glass.gradle .github/workflows/fix-mushin-clean-build.yml
+          git commit -m "Regenerate MUSHIN manifest after clean builds"
+          git push
