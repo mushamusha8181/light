@@ -32,6 +32,7 @@ LED強度制御はAndroid 13以降かつ対応ハードウェアでのみ実際�
 
 ## 解消済み
 
+- MUSHIN GlassのManifest解析が自己終了形式の `<activity ... />` を誤ってMAIN/LAUNCHER Activityとして扱い、ランチャーaliasが設定画面など誤ったActivityを向く場合があった問題。自己終了Activityを解析候補から除外し、元のMAIN/LAUNCHER ActivityをtargetActivityとして使用するよう修正（2026-10-25）
 - Quick Settings追加キャンセル時の無反応
 - 権限取消後にタイル状態が古いまま残る問題
 - 設定ダイアログ下部の3ボタンによる小型画面の窮屈さ
