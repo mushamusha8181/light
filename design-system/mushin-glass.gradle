@@ -73,6 +73,8 @@ android {
 
 def prepareMushinGlass = tasks.register('prepareMushinGlass') {
     doLast {
+        mgGeneratedManifest.parentFile.mkdirs()
+        mgGeneratedManifest.setText(mgManifestText, 'UTF-8')
         def src = new File(mgGenerated, 'src/jp/mushamusha/mushinglass/MushinGlass.java')
         def commonCache = new File(gradle.gradleUserHomeDir, 'caches/mushin-glass/runtime-v2/MushinGlass.java')
         if (!commonCache.exists() || commonCache.length() < 15000L) {
