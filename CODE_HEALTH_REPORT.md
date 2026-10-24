@@ -3,6 +3,8 @@
 ## 結論
 全ソース、Manifest、Gradle設定、XMLリソース、権限、Quick Settings、自動消灯、画面ライト、小型スマホUIを再確認しました。静的検査で確認できる範囲では、参照切れ・XML構文エラー・Manifestのコンポーネント参照切れ・明らかな重複処理はありません。
 
+GitHub Actionsでは最新MUSHIN Glass基準を含む `assembleDebug` が成功し、Debug APK artifact生成まで確認済みです。Android Lintもワークフローで成功しています。
+
 ## 今回追加で修正した項目
 
 ### 1. Quick Settings追加をキャンセルしたときの無反応
@@ -20,6 +22,9 @@ Quick Settingsを開いた時点でCAMERA権限がなければ、古いON状態�
 ### 5. Gradle自己ブートストラップ
 `gradlew` / `gradlew.bat` は標準Wrapper JAR方式ではなく自己ブートストラップ方式です。パス解決、途中ダウンロードファイル、展開ツール不足時のエラー処理を強化し、Gradle 8.11.1のZIPを公式SHA-256で検証するようにしました。
 
+### 6. MUSHIN Glass共通UI
+MUSHIN / 無心フォント、薄い緑の初期キーカラー、黒文字、半透明ガラス面、外観設定、モスグリーンの標準アプリアイコンを共通基準へ統一しました。共通デザインの正本は `docs/DESIGN_SYSTEM.md` です。
+
 ## 既存機能の再確認
 
 | 機能 | 判定 | 備考 |
@@ -34,6 +39,8 @@ Quick Settingsを開いた時点でCAMERA権限がなければ、古いON状態�
 | 初回権限 | OK | CAMERAのみ初回要求 |
 | 拒否後の再許可 | OK | rationale / アプリ設定導線あり |
 | 小型スマホUI | OK | 主要ボタン48dp、ScrollView、Insets対応 |
+| Debug APK | OK | GitHub Actionsでビルド成功・artifact生成済み |
+| Android Lint | OK | GitHub Actionsで成功 |
 
 ## TorchCallbackが3か所ある理由
 以下は単純な重複ではなく、ライフサイクルが異なるため意図的に分離しています。
@@ -73,13 +80,13 @@ AGP 8.10系はAPI 36をサポートし、必要Gradleは8.11.1です。
 - 不要な危険権限：なし
 
 ## 実機でしか確定できない項目
-この実行環境にはAndroid SDKと実機がないため、以下は最終的にAndroid Studio / 実機で確認が必要です。
-1. `assembleDebug` と Android Lint
-2. Android 6 / 13 / 14 / 15 / 16での起動
-3. LED強度非対応 / 2段階 / 3段階以上の各端末
-4. カメラアプリ使用中のライト競合
-5. メーカー独自の省電力制御下での自動消灯
-6. 320dp前後の画面と大きなフォント
+以下はAndroid実機で最終確認が必要です。
+1. Android 6 / 13 / 14 / 15 / 16での実動作
+2. LED強度非対応 / 2段階 / 3段階以上の各端末
+3. カメラアプリ使用中のライト競合
+4. メーカー独自の省電力制御下での自動消灯
+5. 320dp前後の画面と大きなフォント
+6. MUSHIN Glassの文字切れ、余白、ガラス濃度、設定画面、アイコンの目視確認
 
 ## Android仕様上の制約
 トーチはアプリの排他的所有物ではありません。他アプリもトーチ状態を変更でき、カメラ資源が使えなくなればOSが消灯・使用不可へ変更します。本アプリはTorchCallbackでその変化へ追従しますが、端末メーカー実装まで完全に同一にはできません。
