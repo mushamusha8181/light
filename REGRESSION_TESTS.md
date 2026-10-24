@@ -42,6 +42,10 @@
 - [ ] 初期キーカラーが `#7FA98C`
 - [ ] 初期文字色が黒
 - [ ] 初期アイコンがモスグリーン `#436E6A`
+- [ ] application icon / roundIconが有効なMUSHINアイコンresourceを参照する
+- [ ] `IconTealGray` launcher aliasが初期状態で `enabled=true` になる
+- [ ] launcher aliasの `targetActivity` が元のMAIN/LAUNCHER Activityと一致する
+- [ ] Manifest内に自己終了形式のActivityがMAIN/LAUNCHERより前にあってもtargetActivityを誤認しない
 - [ ] ガラス濃度初期値72
 - [ ] キーカラー変更が反映される
 - [ ] 文字色変更が反映される
@@ -66,3 +70,9 @@
 - Android Lint: PASS (GitHub Actions)
 - APK artifact: PASS
 - Blackview MEGA 1実機目視: NOT RUN — 実機画面確認待ち
+
+2026-10-25 launcher icon repair:
+
+- 17 Android apps rebuild: RUNNING / verification in progress
+- APK launcher alias target static check: PENDING
+- Blackview MEGA 1 launcher display: NOT RUN — 実機画面確認待ち
