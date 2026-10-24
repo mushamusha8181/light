@@ -25,10 +25,8 @@ android {
 }
 
 def prepareMushinGlass = tasks.register('prepareMushinGlass') {
-    def generated = file("$buildDir/generated/mushinGlass")
-    outputs.dir(generated)
-
     doLast {
+        def generated = file("$buildDir/generated/mushinGlass")
         def resFont = new File(generated, 'res/font/mushin.otf')
         def assetFont = new File(generated, 'assets/mushin.otf')
         if (!resFont.exists() || resFont.length() < 1_000_000L || !assetFont.exists()) {
@@ -116,12 +114,6 @@ def prepareMushinGlass = tasks.register('prepareMushinGlass') {
     }
 }
 
-tasks.matching { task ->
-    task.name != 'prepareMushinGlass' && (
-        task.name.contains('Resources') ||
-        task.name.contains('Assets') ||
-        task.name.contains('SourceSetPaths')
-    )
-}.configureEach {
+tasks.named('preBuild').configure {
     dependsOn prepareMushinGlass
 }
