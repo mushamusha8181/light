@@ -13,7 +13,7 @@ def mgAliases = [
 ]
 
 def mgManifestText = mgOriginalManifest.getText('UTF-8')
-def mgComponentPattern = java.util.regex.Pattern.compile('(?s)<(activity|activity-alias)\\b([^>]*)>(.*?)</\\1>')
+def mgComponentPattern = java.util.regex.Pattern.compile('(?s)<(activity|activity-alias)\\b(?![^>]*?/\\s*>)([^>]*)>(.*?)</\\1>')
 def mgComponentMatcher = mgComponentPattern.matcher(mgManifestText)
 def mgOut = new StringBuffer()
 def mgLauncherTarget = null
