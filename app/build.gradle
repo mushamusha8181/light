@@ -18,4 +18,107 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    def mushinGenerated = file("$buildDir/generated/mushinGlass")
+    sourceSets.main.res.srcDir(new File(mushinGenerated, 'res'))
+    sourceSets.main.assets.srcDir(new File(mushinGenerated, 'assets'))
+}
+
+def prepareMushinGlass = tasks.register('prepareMushinGlass') {
+    def generated = file("$buildDir/generated/mushinGlass")
+    outputs.dir(generated)
+
+    doLast {
+        def resFont = new File(generated, 'res/font/mushin.otf')
+        def assetFont = new File(generated, 'assets/mushin.otf')
+        if (!resFont.exists() || resFont.length() < 1_000_000L || !assetFont.exists()) {
+            def cacheDir = new File(gradle.gradleUserHomeDir, 'caches/mushin/1.04')
+            cacheDir.mkdirs()
+            def zipFile = new File(cacheDir, 'MODI_mushin_2021_1104.zip')
+            if (!zipFile.exists() || zipFile.length() < 2_000_000L) {
+                def connection = new URL('https://modi.jpn.org/download/MODI_mushin_2021_1104.zip').openConnection()
+                connection.connectTimeout = 15_000
+                connection.readTimeout = 45_000
+                connection.setRequestProperty('User-Agent', 'MUSHIN-Glass-Android-Build')
+                connection.inputStream.withCloseable { input ->
+                    zipFile.withOutputStream { output -> output << input }
+                }
+            }
+
+            byte[] fontBytes = null
+            new java.util.zip.ZipInputStream(new FileInputStream(zipFile)).withCloseable { zin ->
+                java.util.zip.ZipEntry entry
+                while ((entry = zin.nextEntry) != null) {
+                    if (!entry.directory && (entry.name == 'mushin.otf' || entry.name.endsWith('/mushin.otf'))) {
+                        fontBytes = zin.bytes
+                        break
+                    }
+                }
+            }
+            if (fontBytes == null || fontBytes.length < 1_000_000) {
+                throw new GradleException('MUSHIN font could not be extracted from the official archive.')
+            }
+            resFont.parentFile.mkdirs()
+            assetFont.parentFile.mkdirs()
+            resFont.bytes = fontBytes
+            assetFont.bytes = fontBytes
+        }
+
+        def colors = [
+            default:'#E62117', green:'#4E8F6B', green_light:'#7FA98C', white:'#FFFFFF',
+            moss_pink:'#8E5A6B', moss_red:'#8E4F4A', moss_black:'#3A3A3A',
+            mono_light:'#000000', mono_dark:'#828385', graphite:'#546E7A', slate:'#455A64',
+            teal_gray:'#436E6A', olive_gray:'#666B4D', mauve_gray:'#6D5A70',
+            sand_gray:'#756A5C', blue_sky:'#3568B8', blue_night:'#4F78C8',
+            red_rose:'#C05278', red_night:'#A23B48', brown_latte:'#806353', brown_cocoa:'#795548'
+        ]
+        def pathData = 'M18,78 L18,31 C18,23 23,18 31,18 C36,18 40,21 43,26 L54,43 L65,26 C68,21 72,18 77,18 C85,18 90,23 90,31 L90,78 L77,78 L77,40 L59,68 C57,72 51,72 49,68 L31,40 L31,78 Z'
+        def drawableDir = new File(generated, 'res/drawable')
+        def v26Dir = new File(generated, 'res/mipmap-anydpi-v26')
+        def mipmapDir = new File(generated, 'res/mipmap-anydpi')
+        def valuesDir = new File(generated, 'res/values')
+        [drawableDir, v26Dir, mipmapDir, valuesDir].each { it.mkdirs() }
+
+        new File(valuesDir, 'mushin_glass_colors.xml').text = '''<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="mushin_icon_background">#FFFFFF</color>
+</resources>
+'''
+        new File(mipmapDir, 'mushin_icon_fallback.xml').text = """<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFF" android:pathData="M0,0H108V108H0Z" />
+    <path android:fillColor="#436E6A" android:pathData="${pathData}"
+        android:strokeColor="#26000000" android:strokeWidth="1.2" />
+</vector>
+"""
+        def aliases = new StringBuilder('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n')
+        colors.each { id, color ->
+            aliases.append("    <item type=\"mipmap\" name=\"mushin_icon_${id}\">@mipmap/mushin_icon_fallback</item>\n")
+            new File(drawableDir, "mushin_mark_${id}.xml").text = """<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="${color}" android:pathData="${pathData}"
+        android:strokeColor="#26000000" android:strokeWidth="1.2" />
+</vector>
+"""
+            new File(v26Dir, "mushin_icon_${id}.xml").text = """<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/mushin_icon_background" />
+    <foreground android:drawable="@drawable/mushin_mark_${id}" />
+</adaptive-icon>
+"""
+        }
+        aliases.append('</resources>\n')
+        new File(valuesDir, 'mushin_icon_legacy_aliases.xml').text = aliases.toString()
+    }
+}
+
+tasks.matching { task ->
+    (task.name.startsWith('merge') && task.name.endsWith('Resources')) ||
+    (task.name.startsWith('merge') && task.name.endsWith('Assets'))
+}.configureEach {
+    dependsOn prepareMushinGlass
 }
