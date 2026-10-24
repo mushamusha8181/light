@@ -117,8 +117,11 @@ def prepareMushinGlass = tasks.register('prepareMushinGlass') {
 }
 
 tasks.matching { task ->
-    (task.name.startsWith('merge') && task.name.endsWith('Resources')) ||
-    (task.name.startsWith('merge') && task.name.endsWith('Assets'))
+    task.name != 'prepareMushinGlass' && (
+        task.name.contains('Resources') ||
+        task.name.contains('Assets') ||
+        task.name.contains('SourceSetPaths')
+    )
 }.configureEach {
     dependsOn prepareMushinGlass
 }
