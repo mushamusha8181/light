@@ -73,6 +73,6 @@
 
 2026-10-25 launcher icon repair:
 
-- 17 Android apps rebuild: RUNNING / verification in progress
-- APK launcher alias target static check: PENDING
+- 17 Android apps rebuild: PASS (GitHub Actions)
+- APK launcher alias target static check: IN PROGRESS — representative repaired APKs PASS; all 17 are being re-audited
 - Blackview MEGA 1 launcher display: NOT RUN — 実機画面確認待ち
