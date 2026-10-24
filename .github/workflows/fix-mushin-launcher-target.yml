@@ -1,0 +1,33 @@
+name: Fix MUSHIN launcher target
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-mushin-launcher-target.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair self-closing activity parsing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          old = "def mgComponentPattern = java.util.regex.Pattern.compile('(?s)<(activity|activity-alias)\\\\b([^>]*)>(.*?)</\\\\1>')"
+          new = "def mgComponentPattern = java.util.regex.Pattern.compile('(?s)<(activity|activity-alias)\\\\b(?![^>]*?/\\\\s*>)([^>]*)>(.*?)</\\\\1>')"
+          for rel in ['mushin-glass.gradle', 'design-system/mushin-glass.gradle']:
+              p = Path(rel)
+              s = p.read_text()
+              if old not in s:
+                  raise SystemExit(f'expected launcher parser not found in {rel}')
+              p.write_text(s.replace(old, new, 1))
+          PY
+      - name: Commit repair and remove one-shot workflow
+        run: |
+          rm .github/workflows/fix-mushin-launcher-target.yml
+          git config user.name 'mushamusha8181'
+          git config user.email 'mushamusha8181@users.noreply.github.com'
+          git add mushin-glass.gradle design-system/mushin-glass.gradle .github/workflows/fix-mushin-launcher-target.yml
+          git commit -m 'Fix MUSHIN launcher activity detection'
+          git push
