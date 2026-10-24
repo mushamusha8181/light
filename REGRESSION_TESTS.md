@@ -74,5 +74,9 @@
 2026-10-25 launcher icon repair:
 
 - 17 Android apps rebuild: PASS (GitHub Actions)
-- APK launcher alias target static check: IN PROGRESS — representative repaired APKs PASS; all 17 are being re-audited
+- APK launcher icon static audit: PASS 17/17
+- application icon / roundIcon = enabled `IconTealGray` resource: PASS 17/17
+- `IconTealGray enabled=true`, `IconDefault enabled=false`: PASS 17/17
+- launcher alias `targetActivity = MainActivity`: PASS 17/17
+- launcher alias count: 21 variants per APK, PASS 17/17
 - Blackview MEGA 1 launcher display: NOT RUN — 実機画面確認待ち
