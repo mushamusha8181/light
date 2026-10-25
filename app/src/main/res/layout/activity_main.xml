@@ -52,6 +52,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:importantForAccessibility="no"
+            android:tag="keep_text_color"
             android:text="●"
             android:textColor="@color/button_stroke"
             android:textSize="48sp" />
@@ -134,6 +135,7 @@
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_off_button"
             android:minHeight="48dp"
+            android:tag="keep_text_color"
             android:text="@string/off"
             android:textAllCaps="false"
             android:textColor="@color/danger"
