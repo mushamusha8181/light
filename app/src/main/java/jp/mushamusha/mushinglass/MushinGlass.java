@@ -201,7 +201,8 @@ public final class MushinGlass implements Application.ActivityLifecycleCallbacks
         if(v instanceof SeekBar && Build.VERSION.SDK_INT>=21){ ((SeekBar)v).setProgressTintList(accent); ((SeekBar)v).setThumbTintList(accent); }
         if(v instanceof ProgressBar && Build.VERSION.SDK_INT>=21){ ((ProgressBar)v).setProgressTintList(accent); ((ProgressBar)v).setIndeterminateTintList(accent); }
         if(v instanceof Spinner){ v.setBackground(glassDrawable(a,Color.WHITE,Math.max(42,c.glassOpacity-16),12)); }
-        boolean glass=simple.contains("CardView")||simple.contains("Toolbar")||simple.contains("BottomNavigation")||simple.contains("NavigationBar")||simple.contains("AppBar")||id.contains("card")||id.contains("panel")||id.contains("toolbar")||id.contains("bottom_bar")||id.contains("bottom_nav")||id.contains("top_bar")||id.contains("controls")||id.contains("search_box")||id.contains("settings_section");
+        String key=id.toLowerCase(java.util.Locale.ROOT);
+        boolean glass=simple.contains("CardView")||simple.contains("Toolbar")||simple.contains("BottomNavigation")||simple.contains("NavigationBar")||simple.contains("AppBar")||key.contains("card")||key.contains("panel")||key.contains("toolbar")||key.contains("bottom_bar")||key.contains("bottomnav")||key.contains("bottom_nav")||key.contains("top_bar")||key.contains("controls")||key.contains("searchbox")||key.contains("search_box")||key.contains("settingssection")||key.contains("settings_section");
         if(glass && !(v instanceof TextView)){ v.setBackground(glassDrawable(a,Color.WHITE,Math.max(44,c.glassOpacity-5),16)); v.setElevation(0); }
         if(v instanceof ViewGroup){ ViewGroup g=(ViewGroup)v; for(int i=0;i<g.getChildCount();i++) styleTree(a,g.getChildAt(i),c); }
     }
