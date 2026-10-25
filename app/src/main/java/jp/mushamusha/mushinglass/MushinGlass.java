@@ -193,7 +193,7 @@ public final class MushinGlass implements Application.ActivityLifecycleCallbacks
                 Button b=(Button)t; b.setAllCaps(false); b.setElevation(0); if(Build.VERSION.SDK_INT>=21)b.setStateListAnimator(null);
                 int color=(b.isSelected()||b.isActivated())?c.palette.primary:Color.WHITE;
                 int opacity=(b.isSelected()||b.isActivated())?Math.max(44,c.glassOpacity-16):Math.max(48,c.glassOpacity-8);
-                b.setBackground(glassDrawable(a,color,opacity,14)); int x=dp(a,14),y=dp(a,9); b.setPadding(x,y,x,y);
+                if(!keepShape(b)){ b.setBackground(glassDrawable(a,color,opacity,14)); int x=dp(a,14),y=dp(a,9); b.setPadding(x,y,x,y); }
             } else if(t instanceof EditText){
                 t.setBackground(glassDrawable(a,Color.WHITE,Math.max(42,c.glassOpacity-16),12)); int x=dp(a,12),y=dp(a,9); t.setPadding(x,y,x,y);
             }
@@ -207,8 +207,10 @@ public final class MushinGlass implements Application.ActivityLifecycleCallbacks
         if(v instanceof ViewGroup){ ViewGroup g=(ViewGroup)v; for(int i=0;i<g.getChildCount();i++) styleTree(a,g.getChildAt(i),c); }
     }
 
+    private static boolean keepShape(View v) { Object tag=v.getTag(); return tag!=null&&String.valueOf(tag).contains("keep_mushin_shape"); }
+
     private static boolean keepColor(Context c, TextView v) {
-        Object tag=v.getTag(); if(tag!=null&&"keep_text_color".equals(String.valueOf(tag))) return true;
+        Object tag=v.getTag(); if(tag!=null&&String.valueOf(tag).contains("keep_text_color")) return true;
         String id=resName(c,v.getId()); if("file_name".equals(id)||id.contains("operation_row")||id.contains("now_playing")||id.contains("playing_title")){ v.setTextColor(Color.BLACK); return true; }
         return false;
     }
