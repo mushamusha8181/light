@@ -27,6 +27,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import jp.mushamusha.mushinglass.MushinGlass;
+
 public class MainActivity extends Activity {
 
     public static final String EXTRA_REQUEST_CAMERA_PERMISSION =
@@ -481,6 +483,7 @@ public class MainActivity extends Activity {
         box.addView(quickTileButton, quickTileParams);
         quickTileButton.setOnClickListener(v -> requestQuickTile());
 
+        MushinGlass.applyToView(this, box);
         ScrollView settingsScroll = new ScrollView(this);
         settingsScroll.setFillViewport(false);
         settingsScroll.addView(box);
