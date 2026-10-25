@@ -76,7 +76,7 @@ def prepareMushinGlass = tasks.register('prepareMushinGlass') {
         mgGeneratedManifest.parentFile.mkdirs()
         mgGeneratedManifest.setText(mgManifestText, 'UTF-8')
         def src = new File(mgGenerated, 'src/jp/mushamusha/mushinglass/MushinGlass.java')
-        def commonCache = new File(gradle.gradleUserHomeDir, 'caches/mushin-glass/runtime-v2/MushinGlass.java')
+        def commonCache = new File(gradle.gradleUserHomeDir, 'caches/mushin-glass/runtime-v3/MushinGlass.java')
         if (!commonCache.exists() || commonCache.length() < 15000L) {
             commonCache.parentFile.mkdirs()
             def c = new URL('https://raw.githubusercontent.com/mushamusha8181/light/main/app/src/main/java/jp/mushamusha/mushinglass/MushinGlass.java').openConnection()
@@ -132,7 +132,7 @@ fun MushinGlassTheme(content: @Composable () -> Unit) {
             small = RoundedCornerShape(10.dp),
             medium = RoundedCornerShape(14.dp),
             large = RoundedCornerShape(18.dp),
-            extraLarge = RoundedCornerShape(24.dp)
+            extraLarge = RoundedCornerShape(20.dp)
         ),
         content = content
     )

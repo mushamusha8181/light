@@ -42,7 +42,7 @@ fun MushinGlassTheme(content: @Composable () -> Unit) {
             small = RoundedCornerShape(10.dp),
             medium = RoundedCornerShape(14.dp),
             large = RoundedCornerShape(18.dp),
-            extraLarge = RoundedCornerShape(24.dp)
+            extraLarge = RoundedCornerShape(20.dp)
         ),
         content = content
     )

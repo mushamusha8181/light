@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -24,12 +25,16 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
@@ -152,25 +157,52 @@ public final class MushinGlass implements Application.ActivityLifecycleCallbacks
         if(Build.VERSION.SDK_INT>=30){ WindowInsetsController ctl=w.getInsetsController(); if(ctl!=null) ctl.setSystemBarsAppearance(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS|WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS|WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS); }
         else if(Build.VERSION.SDK_INT>=26) w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         else if(Build.VERSION.SDK_INT>=23) w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        w.getDecorView().post(() -> {
-            View content=a.findViewById(android.R.id.content); if(content!=null){ content.setBackgroundColor(c.background); styleTree(a,content,c); }
-            addAppearanceEntry(a,c);
-        });
+        // Do a few bounded passes only. This catches views added just after setContentView/render
+        // without keeping a permanent layout observer or background monitor alive.
+        applyActivity(a,c);
+        w.getDecorView().postDelayed(() -> applyActivity(a,config(a)),120);
+        w.getDecorView().postDelayed(() -> applyActivity(a,config(a)),520);
+    }
+
+    private static void applyActivity(Activity a, Config c) {
+        if(a.isFinishing() || (Build.VERSION.SDK_INT>=17 && a.isDestroyed())) return;
+        View content=a.findViewById(android.R.id.content);
+        if(content!=null){ content.setBackgroundColor(c.background); styleTree(a,content,c); }
+        addAppearanceEntry(a,c);
+    }
+
+    /** Apply the current MUSHIN appearance to a newly-created row/dialog subtree. */
+    public static void applyToView(Activity a, View v) {
+        if(a==null || v==null) return;
+        styleTree(a,v,config(a));
     }
 
     private static void styleTree(Activity a, View v, Config c) {
         String cn=v.getClass().getName();
-        if(v instanceof WebView||v instanceof ImageView||cn.contains("PreviewView")||cn.contains("SurfaceView")||cn.contains("TextureView")) return;
+        if(v instanceof WebView||v instanceof ImageView||cn.contains("PreviewView")||cn.contains("SurfaceView")||cn.contains("TextureView")||cn.contains("GLSurfaceView")) return;
+        String simple=v.getClass().getSimpleName(), id=resName(a,v.getId());
+        ColorStateList accent=ColorStateList.valueOf(c.palette.primary);
         if(v instanceof TextView){
             TextView t=(TextView)v; Typeface f=typeface(a); if(f!=null) t.setTypeface(f,t.getTypeface()!=null&&t.getTypeface().isBold()?Typeface.BOLD:Typeface.NORMAL);
             if(!keepColor(a,t)) t.setTextColor(c.textColor); t.setIncludeFontPadding(false);
-            if(t instanceof Button){ Button b=(Button)t; b.setAllCaps(false); b.setElevation(0); if(Build.VERSION.SDK_INT>=21)b.setStateListAnimator(null); b.setBackground(glassDrawable(a,c.palette.primary,c.glassOpacity,22)); int x=dp(a,16),y=dp(a,10); b.setPadding(x,y,x,y); }
-            else if(t instanceof EditText){ t.setBackground(glassDrawable(a,Color.WHITE,Math.max(46,c.glassOpacity-14),18)); int x=dp(a,14),y=dp(a,10); t.setPadding(x,y,x,y); }
+            if(t instanceof CompoundButton){
+                CompoundButton cb=(CompoundButton)t;
+                if(Build.VERSION.SDK_INT>=21) cb.setButtonTintList(accent);
+                if(t instanceof Switch && Build.VERSION.SDK_INT>=21){ Switch sw=(Switch)t; sw.setThumbTintList(accent); sw.setTrackTintList(ColorStateList.valueOf(withAlpha(c.palette.primary,92))); }
+            } else if(t instanceof Button){
+                Button b=(Button)t; b.setAllCaps(false); b.setElevation(0); if(Build.VERSION.SDK_INT>=21)b.setStateListAnimator(null);
+                int color=(b.isSelected()||b.isActivated())?c.palette.primary:Color.WHITE;
+                int opacity=(b.isSelected()||b.isActivated())?Math.max(44,c.glassOpacity-16):Math.max(48,c.glassOpacity-8);
+                b.setBackground(glassDrawable(a,color,opacity,14)); int x=dp(a,14),y=dp(a,9); b.setPadding(x,y,x,y);
+            } else if(t instanceof EditText){
+                t.setBackground(glassDrawable(a,Color.WHITE,Math.max(42,c.glassOpacity-16),12)); int x=dp(a,12),y=dp(a,9); t.setPadding(x,y,x,y);
+            }
         }
-        if(v instanceof SeekBar && Build.VERSION.SDK_INT>=21){ android.content.res.ColorStateList tint=android.content.res.ColorStateList.valueOf(c.palette.primary); ((SeekBar)v).setProgressTintList(tint); ((SeekBar)v).setThumbTintList(tint); }
-        String simple=v.getClass().getSimpleName(), id=resName(a,v.getId());
-        boolean glass=simple.contains("CardView")||simple.contains("Toolbar")||id.contains("card")||id.contains("panel")||id.contains("toolbar")||id.contains("bottom_bar")||id.contains("top_bar")||id.contains("controls");
-        if(glass && !(v instanceof TextView)){ v.setBackground(glassDrawable(a,Color.WHITE,c.glassOpacity,24)); v.setElevation(dp(a,1)); }
+        if(v instanceof SeekBar && Build.VERSION.SDK_INT>=21){ ((SeekBar)v).setProgressTintList(accent); ((SeekBar)v).setThumbTintList(accent); }
+        if(v instanceof ProgressBar && Build.VERSION.SDK_INT>=21){ ((ProgressBar)v).setProgressTintList(accent); ((ProgressBar)v).setIndeterminateTintList(accent); }
+        if(v instanceof Spinner){ v.setBackground(glassDrawable(a,Color.WHITE,Math.max(42,c.glassOpacity-16),12)); }
+        boolean glass=simple.contains("CardView")||simple.contains("Toolbar")||simple.contains("BottomNavigation")||simple.contains("NavigationBar")||simple.contains("AppBar")||id.contains("card")||id.contains("panel")||id.contains("toolbar")||id.contains("bottom_bar")||id.contains("bottom_nav")||id.contains("top_bar")||id.contains("controls")||id.contains("search_box")||id.contains("settings_section");
+        if(glass && !(v instanceof TextView)){ v.setBackground(glassDrawable(a,Color.WHITE,Math.max(44,c.glassOpacity-5),16)); v.setElevation(0); }
         if(v instanceof ViewGroup){ ViewGroup g=(ViewGroup)v; for(int i=0;i<g.getChildCount();i++) styleTree(a,g.getChildAt(i),c); }
     }
 
