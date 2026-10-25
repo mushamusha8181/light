@@ -1,0 +1,40 @@
+name: One-off MUSHIN semantic UI tags
+
+on:
+  push:
+    paths:
+      - 'MUSHIN_UI_TAG_TRIGGER'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve semantic custom UI
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('app/src/main/java/jp/mushamusha/mushinglass/MushinGlass.java')
+          s=p.read_text()
+          old='''                b.setBackground(glassDrawable(a,color,opacity,14)); int x=dp(a,14),y=dp(a,9); b.setPadding(x,y,x,y);'''
+          new='''                if(!keepShape(b)){ b.setBackground(glassDrawable(a,color,opacity,14)); int x=dp(a,14),y=dp(a,9); b.setPadding(x,y,x,y); }'''
+          if old not in s: raise SystemExit('button shape anchor missing')
+          s=s.replace(old,new,1)
+          old='''        Object tag=v.getTag(); if(tag!=null&&"keep_text_color".equals(String.valueOf(tag))) return true;'''
+          new='''        Object tag=v.getTag(); if(tag!=null&&String.valueOf(tag).contains("keep_text_color")) return true;'''
+          if old not in s: raise SystemExit('keep color anchor missing')
+          s=s.replace(old,new,1)
+          anchor='''    private static boolean keepColor(Context c, TextView v) {'''
+          helper='''    private static boolean keepShape(View v) { Object tag=v.getTag(); return tag!=null&&String.valueOf(tag).contains("keep_mushin_shape"); }\n\n'''
+          s=s.replace(anchor,helper+anchor,1)
+          p.write_text(s)
+          PY
+          rm -f MUSHIN_UI_TAG_TRIGGER .github/workflows/oneoff-semantic-ui-tags.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Preserve semantic custom controls in MUSHIN styling'
+          git push
