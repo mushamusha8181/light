@@ -65,6 +65,21 @@
 - 初期ガラス濃度: `72`
 - フラットな情報構造 + 控えめな半透明ガラス面
 - 小型画面優先
+- 強い影、旧式の立体ボタン、全面ガラス化は使わない
+
+### 外観設定の反映範囲
+
+- View/XML画面は共通ランタイムがMUSHINフォント、文字色、アクセント色、半透明面を適用する
+- Activity表示直後だけでなく、0ms / 120ms / 520msの限定3回だけ再適用して、初期描画直後に追加されるViewを拾う
+- 常時Layout監視や常駐ポーリングは行わない
+- RecyclerView行、検索結果、通信後に生成するView、プログラム生成ダイアログなど、ユーザー操作後に追加するUIは `MushinGlass.applyToView(Activity, View)` で明示適用する
+- Compose画面はルートを `MushinGlassTheme` で包み、`MaterialTheme.colorScheme` / `MaterialTheme.typography` を通して外観設定へ追従させる
+- アプリ内に共通Themeの複製を持たず、共通Themeを正本とする
+- CheckBox / Switch / SeekBar / ProgressBar / Spinner はコントロール形状を保ったままアクセント色へ追従する
+- WebView内のWebサイト色、ImageView、カメラプレビュー、SurfaceView / TextureView / GLSurfaceView は共通ランタイムで再着色しない
+- 録画赤、期限警告、選択状態、ライト状態など機能上意味のある色は `keep_text_color` で保持できる
+- シャッターなど機能上形状に意味がある専用操作は `keep_mushin_shape` で共通ボタン形状への置換を避ける
+- カメラ系アプリは映像そのものを変更せず、上部/下部の操作帯・設定・文字・一般操作のみMUSHIN Glassへ寄せる
 
 ## UI
 
@@ -73,6 +88,8 @@
 - Android 15 / 16のedge-to-edgeとInsetsを考慮する
 - 小型端末や大きな文字で操作が押し出されないようにする
 - ダイアログ下部へ多数の操作ボタンを横並びにしない
+- 検索欄、カード、設定セクション、上下の操作帯は10〜18dp程度の控えめな角丸を基本とする
+- Composeの主要操作は必要以上に塗りつぶさず、Outlined / Text / Surface中心のフラット表現を優先する
 
 ## 状態監視
 
@@ -84,6 +101,8 @@ TorchCallbackは用途別に分離する。
 
 各監視は不要になった時点で解除し、常時重複監視し続けない。
 
+MUSHIN Glassの動的UI追従にも常時監視は追加せず、限定再適用またはUI生成箇所からの明示適用を使う。
+
 ## 完了条件
 
 変更完了時は、対象変更に応じて以下を満たす。
@@ -93,4 +112,5 @@ TorchCallbackは用途別に分離する。
 - 回帰チェック更新・実施
 - READMEの現状との整合確認
 - `KNOWN_ISSUES.md` の確認・更新
+- 静的な初期画面だけでなく、ユーザー操作後に生成される画面/行/ダイアログにも外観設定が反映されること
 - 実行できなかった確認は未確認として明示する
